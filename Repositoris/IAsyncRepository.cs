@@ -37,4 +37,9 @@ namespace FoodOrder.Repositoris
     {
         Task<IEnumerable<Payment>> ListByDateRangeAsync(DateTime from, DateTime to);
     }
+
+    public interface ICategoryRepository : IAsyncRepository<Category>
+    {
+        Task<IEnumerable<Category>> SearchByNameAsync(string name);
+    }
 }
