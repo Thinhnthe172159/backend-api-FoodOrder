@@ -74,6 +74,7 @@ builder.Services.AddAuthentication(options =>
 
 // đăng ký service ở đây
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // đăng ký repo ở đây
 builder.Services.AddScoped<IUserRepository, UserRepository>();

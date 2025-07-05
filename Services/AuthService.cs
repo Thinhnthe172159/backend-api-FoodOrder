@@ -86,7 +86,7 @@ namespace FoodOrder.Services
 
         public async Task<bool> ResetPasswordAsync(ResetPasswordDto dto)
         {
-            var user = await _userRepo.ListAsync()
+            var user = await _userRepo.GetAllAsync()
                                       .ContinueWith(t => t.Result.FirstOrDefault(u => u.Email == dto.Email));
             if (user == null) return false;
 
