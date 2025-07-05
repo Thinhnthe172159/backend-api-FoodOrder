@@ -19,6 +19,7 @@ namespace FoodOrder.IRepositories
     public interface ITableRepository : IAsyncRepository<Table>
     {
         Task<IEnumerable<Table>> ListByStatusAsync(string status);
+        Task<IEnumerable<Table>> GetTableByQrCode(string code);
     }
 
     public interface IMenuItemRepository : IAsyncRepository<MenuItem>
