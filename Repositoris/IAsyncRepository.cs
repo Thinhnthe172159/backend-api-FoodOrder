@@ -13,7 +13,7 @@ namespace FoodOrder.Repositoris
 
     public interface IUserRepository : IAsyncRepository<User>
     {
-        Task<User> GetByUsernameAsync(string username);
+        Task<User?> GetByUsernameAsync(string username);
     }
 
     public interface ITableRepository : IAsyncRepository<Table>

@@ -1,13 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FoodOrder.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodOrder.Repositoris
 {
     public class GenericRepository<T> : IAsyncRepository<T> where T : class
     {
-        protected readonly DbContext _context;
+        protected readonly FoodOrderDbContext _context;
         protected readonly DbSet<T> _dbSet;
 
-        public GenericRepository(DbContext context)
+        public GenericRepository(FoodOrderDbContext context)
         {
             _context = context;
             _dbSet = context.Set<T>();
