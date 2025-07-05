@@ -5,44 +5,47 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodOrder.Repositories
 {
-    public class GenericRepository<T> : IAsyncRepository<T> where T : class
+    public class GenericRepository<TContext, T> : IAsyncRepository<T>
+      where T : class
+      where TContext : DbContext
     {
-        protected readonly FoodOrderDbContext _context;
-        protected readonly DbSet<T> _dbSet;
+        protected readonly TContext _context;
 
-        public GenericRepository(FoodOrderDbContext context)
+        public GenericRepository(TContext context)
         {
             _context = context;
-            _dbSet = context.Set<T>();
         }
 
-        public async Task<T> GetByIdAsync(int id)
-        {
-            return await _dbSet.FindAsync(id);
-        }
+        public async Task<IEnumerable<T>> GetAllAsync() => await _context.Set<T>().ToListAsync();
 
-        public async Task<IEnumerable<T>> ListAsync()
-        {
-            return await _dbSet.ToListAsync();
-        }
+        public async Task<T?> GetByIdAsync(int id) => await _context.Set<T>().FindAsync(id);
 
-        public async Task<T> AddAsync(T entity)
+        public async Task AddAsync(T entity)
         {
-            await _dbSet.AddAsync(entity);
+            await _context.Set<T>().AddAsync(entity);
             await _context.SaveChangesAsync();
-            return entity;
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var entity = await GetByIdAsync(id);
+            if (entity != null)
+            {
+                _context.Set<T>().Remove(entity);
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task UpdateAsync(T entity)
         {
-            _dbSet.Update(entity);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(T entity)
-        {
-            _dbSet.Remove(entity);
+            _context.Update(entity);
             await _context.SaveChangesAsync();
         }
     }
+    public class GenericRepository<T> : GenericRepository<FoodOrderDbContext, T>, IAsyncRepository<T>
+        where T : class
+    {
+        public GenericRepository(FoodOrderDbContext context) : base(context) { }
+    }
 }
+

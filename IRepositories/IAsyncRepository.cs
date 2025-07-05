@@ -4,11 +4,12 @@ namespace FoodOrder.IRepositories
 {
     public interface IAsyncRepository<T> where T : class
     {
-        Task<T> GetByIdAsync(int id);
-        Task<IEnumerable<T>> ListAsync();
-        Task<T> AddAsync(T entity);
+        Task<IEnumerable<T>> GetAllAsync();
+        Task<T?> GetByIdAsync(int id);
+        Task AddAsync(T entity);
+        Task DeleteAsync(int id);
         Task UpdateAsync(T entity);
-        Task DeleteAsync(T entity);
+        
     }
 
     public interface IUserRepository : IAsyncRepository<User>
