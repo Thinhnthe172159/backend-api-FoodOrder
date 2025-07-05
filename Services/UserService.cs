@@ -1,5 +1,6 @@
-﻿using FoodOrder.Models;
-using FoodOrder.Repositoris;
+﻿using FoodOrder.IRepositories;
+using FoodOrder.IServices;
+using FoodOrder.Models;
 using FoodOrderApp.Application.DTOs;
 
 namespace FoodOrder.Services

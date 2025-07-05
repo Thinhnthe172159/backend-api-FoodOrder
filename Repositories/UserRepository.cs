@@ -1,8 +1,9 @@
-﻿using FoodOrder.Models;
+﻿using FoodOrder.IRepositories;
+using FoodOrder.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
-namespace FoodOrder.Repositoris
+namespace FoodOrder.Repositories
 {
     public class UserRepository : GenericRepository<User>, IUserRepository
     {

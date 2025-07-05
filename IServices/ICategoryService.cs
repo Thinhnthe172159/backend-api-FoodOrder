@@ -1,6 +1,6 @@
 ﻿using FoodOrder.Models;
 
-namespace FoodOrder.Services
+namespace FoodOrder.IServices
 {
     public interface ICategoryService
     {

@@ -1,6 +1,8 @@
 ﻿using FoodOrder.Dtos;
+using FoodOrder.IRepositories;
+using FoodOrder.IServices;
 using FoodOrder.Models;
-using FoodOrder.Repositoris;
+using FoodOrder.Repositories;
 using FoodOrder.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;

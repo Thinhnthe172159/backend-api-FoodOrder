@@ -1,6 +1,7 @@
 ﻿using FoodOrder.Dtos;
+using FoodOrder.IRepositories;
+using FoodOrder.IServices;
 using FoodOrder.Models;
-using FoodOrder.Repositoris;
 using FoodOrderApp.Application.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;

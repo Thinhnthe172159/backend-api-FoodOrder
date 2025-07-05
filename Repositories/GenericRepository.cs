@@ -1,7 +1,9 @@
-﻿using FoodOrder.Models;
+﻿using FoodOrder.IRepositories;
+using FoodOrder.Models;
+using FoodOrder.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace FoodOrder.Repositoris
+namespace FoodOrder.Repositories
 {
     public class GenericRepository<T> : IAsyncRepository<T> where T : class
     {

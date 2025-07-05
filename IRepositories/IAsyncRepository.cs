@@ -1,6 +1,6 @@
 ﻿using FoodOrder.Models;
 
-namespace FoodOrder.Repositoris
+namespace FoodOrder.IRepositories
 {
     public interface IAsyncRepository<T> where T : class
     {

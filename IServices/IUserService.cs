@@ -1,7 +1,7 @@
 ﻿using FoodOrder.Models;
 using FoodOrderApp.Application.DTOs;
 
-namespace FoodOrder.Services
+namespace FoodOrder.IServices
 {
     public interface IUserService
     {
