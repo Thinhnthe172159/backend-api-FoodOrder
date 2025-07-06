@@ -1,4 +1,6 @@
 ﻿using FoodOrder.Dtos;
+using FoodOrder.Extensions;
+using FoodOrder.Extentions;
 using FoodOrder.IRepositories;
 using FoodOrder.IServices;
 using FoodOrder.Models;
@@ -86,18 +88,23 @@ builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
-
-// MenuItem
 builder.Services.AddScoped<IMenuItemRepository, MenuItemRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+// đăng ký dịch vụ khác
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+
+builder.Services.AddSingleton<CloudinaryService>();
+builder.Services.AddTransient<QrCodeCloudService>();
+
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
 //{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+app.UseSwagger();
+app.UseSwaggerUI();
 //}
 
 app.UseHttpsRedirection();
