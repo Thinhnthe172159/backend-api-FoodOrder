@@ -80,17 +80,22 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrderItemService, OrderItemService>();
 
+// MenuItem Service
+builder.Services.AddScoped<IMenuService, MenuService>();
+
+
 // đăng ký repo ở đây
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
+builder.Services.AddScoped<IMenuItemRepository, MenuItemRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 // đăng ký dịch vụ khác
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
 builder.Services.AddSingleton<CloudinaryService>();
 builder.Services.AddTransient<QrCodeCloudService>();
-
 
 
 var app = builder.Build();
