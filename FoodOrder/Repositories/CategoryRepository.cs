@@ -14,7 +14,20 @@ namespace FoodOrder.Repositories
         {
             return await _context.Set<Category>()
                 .Where(c => c.Name.Contains(name))
+                .OrderBy(c => c.Name)
                 .ToListAsync();
+        }
+
+        public async Task<Category?> GetByNameAsync(string name)
+        {
+            return await _context.Set<Category>()
+                .FirstOrDefaultAsync(c => c.Name.Equals(name));
+        }
+
+        public async Task<bool> ExistsByNameAsync(string name)
+        {
+            return await _context.Set<Category>()
+                .AnyAsync(c => c.Name.Equals(name));
         }
     }
 }

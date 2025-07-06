@@ -1,13 +1,17 @@
-﻿using FoodOrder.Models;
+﻿using FoodOrder.Dtos;
+using FoodOrder.Models;
 
 namespace FoodOrder.IServices
 {
     public interface ICategoryService
     {
-        Task<IEnumerable<Category>> GetAllCategoriesAsync();
-        Task<Category> GetCategoryByIdAsync(int id);
-        Task<Category> CreateCategoryAsync(Category category);
-        Task<Category> UpdateCategoryAsync(int id, Category category);
+        Task<IEnumerable<CategoryDto>> GetCategoriesAsync();
+        Task<CategoryDto?> GetCategoryByIdAsync(int id);
+        Task<CategoryDto?> GetCategoryByNameAsync(string name);
+        Task<IEnumerable<CategoryDto>> SearchCategoriesAsync(string name);
+        Task<CategoryDto> CreateCategoryAsync(CreateCategoryDto dto);
+        Task<CategoryDto> UpdateCategoryAsync(int id, UpdateCategoryDto dto);
         Task<bool> DeleteCategoryAsync(int id);
+        Task<bool> CategoryExistsAsync(string name);
     }
 }

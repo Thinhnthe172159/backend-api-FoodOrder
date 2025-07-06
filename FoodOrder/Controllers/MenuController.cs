@@ -6,21 +6,20 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrder.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class MenuController : ControllerBase
     {
         private readonly IMenuService _menuService;
+        private readonly ILogger<MenuController> _logger;
 
-        public MenuController(IMenuService menuService)
+        public MenuController(IMenuService menuService, ILogger<MenuController> logger)
         {
             _menuService = menuService;
+            _logger = logger;
         }
 
-        /// <summary>
-        /// Lấy danh sách tất cả món ăn có sẵn
-        /// </summary>
-        [HttpGet]
+        [HttpGet("items")]
         public async Task<ActionResult<IEnumerable<MenuItemDto>>> GetMenuItems()
         {
             try
@@ -30,142 +29,134 @@ namespace FoodOrder.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                _logger.LogError(ex, "Error occurred while getting menu items");
+                return StatusCode(500, "Internal server error occurred");
             }
         }
 
-        /// <summary>
-        /// Tìm kiếm món ăn theo filter
-        /// </summary>
-        [HttpPost("search")]
-        public async Task<ActionResult<IEnumerable<MenuItemDto>>> SearchMenuItems(
-            [FromBody] MenuSearchFilter filter)
+        [HttpPost("items/search")]
+        public async Task<ActionResult<IEnumerable<MenuItemDto>>> SearchMenuItems([FromBody] MenuSearchFilter filter)
         {
             try
             {
                 if (filter == null)
-                    return BadRequest(new { message = "Search filter is required" });
+                {
+                    return BadRequest("Filter cannot be null");
+                }
 
                 var menuItems = await _menuService.SearchMenuItemsAsync(filter);
                 return Ok(menuItems);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                _logger.LogError(ex, "Error occurred while searching menu items");
+                return StatusCode(500, "Internal server error occurred");
             }
         }
 
-        /// <summary>
-        /// Lấy thông tin món ăn theo ID
-        /// </summary>
-        [HttpGet("{id}")]
-        public async Task<ActionResult<MenuItemDto>> GetMenuItem(int id)
+        [HttpGet("items/{id:int}")]
+        public async Task<ActionResult<MenuItemDto>> GetMenuItemById(int id)
         {
             try
             {
-                if (id <= 0)
-                    return BadRequest(new { message = "Invalid menu item ID" });
-
                 var menuItem = await _menuService.GetMenuItemByIdAsync(id);
                 if (menuItem == null)
-                    return NotFound(new { message = $"MenuItem with ID {id} not found" });
+                {
+                    return NotFound($"Menu item with ID {id} not found");
+                }
 
                 return Ok(menuItem);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                _logger.LogError(ex, "Error occurred while getting menu item with ID {MenuItemId}", id);
+                return StatusCode(500, "Internal server error occurred");
             }
         }
 
-        /// <summary>
-        /// Tạo món ăn mới
-        /// </summary>
-        [HttpPost]
-        public async Task<ActionResult<MenuItemDto>> CreateMenuItem(
-            [FromBody] CreateMenuItemDto dto)
+        [HttpPost("items")]
+        public async Task<ActionResult<MenuItemDto>> CreateMenuItem([FromForm] CreateMenuItemDto dto)
         {
             try
             {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
                 if (dto == null)
-                    return BadRequest(new { message = "Menu item data is required" });
+                {
+                    return BadRequest("Menu item data cannot be null");
+                }
 
-                var menuItem = await _menuService.CreateMenuItemAsync(dto);
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var createdItem = await _menuService.CreateMenuItemAsync(dto);
                 return CreatedAtAction(
-                    nameof(GetMenuItem),
-                    new { id = menuItem.Id },
-                    menuItem);
+                    nameof(GetMenuItemById),
+                    new { id = createdItem.Id },
+                    createdItem);
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                _logger.LogWarning(ex, "Invalid argument while creating menu item");
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                _logger.LogError(ex, "Error occurred while creating menu item");
+                return StatusCode(500, "Internal server error occurred");
             }
         }
 
-        /// <summary>
-        /// Cập nhật thông tin món ăn
-        /// </summary>
-        [HttpPut("{id}")]
-        public async Task<ActionResult<MenuItemDto>> UpdateMenuItem(
-            int id, [FromBody] UpdateMenuItemDto dto)
+        [HttpPut("items/{id:int}")]
+        public async Task<ActionResult<MenuItemDto>> UpdateMenuItem(int id, [FromForm] UpdateMenuItemDto dto)
         {
             try
             {
-                if (id <= 0)
-                    return BadRequest(new { message = "Invalid menu item ID" });
+                if (dto == null)
+                {
+                    return BadRequest("Menu item data cannot be null");
+                }
 
                 if (!ModelState.IsValid)
+                {
                     return BadRequest(ModelState);
+                }
 
-                if (dto == null)
-                    return BadRequest(new { message = "Menu item data is required" });
-
-                var menuItem = await _menuService.UpdateMenuItemAsync(id, dto);
-                return Ok(menuItem);
+                var updatedItem = await _menuService.UpdateMenuItemAsync(id, dto);
+                return Ok(updatedItem);
             }
             catch (ArgumentException ex)
             {
-                return NotFound(new { message = ex.Message });
+                _logger.LogWarning(ex, "Invalid argument while updating menu item with ID {MenuItemId}", id);
+                return NotFound(ex.Message);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                _logger.LogError(ex, "Error occurred while updating menu item with ID {MenuItemId}", id);
+                return StatusCode(500, "Internal server error occurred");
             }
         }
 
-        /// <summary>
-        /// Xóa món ăn
-        /// </summary>
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteMenuItem(int id)
+        [HttpDelete("items/{id:int}")]
+        public async Task<IActionResult> DeleteMenuItem(int id)
         {
             try
             {
-                if (id <= 0)
-                    return BadRequest(new { message = "Invalid menu item ID" });
-
                 var result = await _menuService.DeleteMenuItemAsync(id);
                 if (!result)
-                    return NotFound(new { message = $"MenuItem with ID {id} not found" });
+                {
+                    return NotFound($"Menu item with ID {id} not found");
+                }
 
                 return NoContent();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                _logger.LogError(ex, "Error occurred while deleting menu item with ID {MenuItemId}", id);
+                return StatusCode(500, "Internal server error occurred");
             }
         }
 
-        /// <summary>
-        /// Lấy danh sách tất cả danh mục
-        /// </summary>
         [HttpGet("categories")]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategories()
         {
@@ -176,41 +167,18 @@ namespace FoodOrder.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                _logger.LogError(ex, "Error occurred while getting categories");
+                return StatusCode(500, "Internal server error occurred");
             }
         }
 
-        /// <summary>
-        /// Lấy món ăn theo danh mục (GET alternative cho search)
-        /// </summary>
-        [HttpGet("category/{categoryId}")]
-        public async Task<ActionResult<IEnumerable<MenuItemDto>>> GetMenuItemsByCategory(int categoryId)
-        {
-            try
-            {
-                if (categoryId <= 0)
-                    return BadRequest(new { message = "Invalid category ID" });
-
-                var filter = new MenuSearchFilter { CategoryId = categoryId };
-                var menuItems = await _menuService.SearchMenuItemsAsync(filter);
-                return Ok(menuItems);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// Tìm kiếm món ăn theo từ khóa (GET alternative)
-        /// </summary>
-        [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<MenuItemDto>>> SearchMenuItemsByKeyword(
-            [FromQuery] string? keyword,
-            [FromQuery] int? categoryId,
-            [FromQuery] bool? isAvailable,
-            [FromQuery] decimal? minPrice,
-            [FromQuery] decimal? maxPrice)
+        [HttpGet("items/search")]
+        public async Task<ActionResult<IEnumerable<MenuItemDto>>> SearchMenuItemsByQuery(
+            [FromQuery] string? keyword = null,
+            [FromQuery] int? categoryId = null,
+            [FromQuery] bool? isAvailable = null,
+            [FromQuery] decimal? minPrice = null,
+            [FromQuery] decimal? maxPrice = null)
         {
             try
             {
@@ -228,7 +196,8 @@ namespace FoodOrder.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                _logger.LogError(ex, "Error occurred while searching menu items by query");
+                return StatusCode(500, "Internal server error occurred");
             }
         }
     }
