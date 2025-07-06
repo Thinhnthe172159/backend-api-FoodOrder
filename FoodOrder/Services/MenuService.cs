@@ -3,6 +3,7 @@ using FoodOrder.IRepositories;
 using FoodOrder.Dtos;
 using FoodOrder.Models;
 using FoodOrderApp.Application.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodOrder.Services
 {
@@ -10,11 +11,13 @@ namespace FoodOrder.Services
     {
         private readonly IMenuItemRepository _menuItemRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly FoodOrderDbContext _context;
 
-        public MenuService(IMenuItemRepository menuItemRepository, ICategoryRepository categoryRepository)
+        public MenuService(IMenuItemRepository menuItemRepository, ICategoryRepository categoryRepository, FoodOrderDbContext foodOrderDbContext)
         {
             _menuItemRepository = menuItemRepository;
             _categoryRepository = categoryRepository;
+            _context = foodOrderDbContext;
         }
 
         public async Task<IEnumerable<MenuItemDto>> GetMenuItemsAsync()
@@ -35,15 +38,12 @@ namespace FoodOrder.Services
 
         public async Task<IEnumerable<MenuItemDto>> SearchMenuItemsAsync(MenuSearchFilter filter)
         {
-            var menuItems = await _menuItemRepository.GetAllAsync();
+            var filteredItems = _context.MenuItems.Include(m => m.Category).AsQueryable();
 
-            var filteredItems = menuItems.AsQueryable();
 
             if (!string.IsNullOrEmpty(filter.Keyword))
             {
-                filteredItems = filteredItems.Where(m =>
-                    m.Name.Contains(filter.Keyword, StringComparison.OrdinalIgnoreCase) ||
-                    (m.Description != null && m.Description.Contains(filter.Keyword, StringComparison.OrdinalIgnoreCase)));
+                filteredItems = filteredItems.Where(m => m.Name.ToLower().Contains(filter.Keyword.ToLower()) || m.Description.ToLower().Contains(filter.Keyword.ToLower()));
             }
 
             if (filter.CategoryId.HasValue)
@@ -66,7 +66,7 @@ namespace FoodOrder.Services
                 filteredItems = filteredItems.Where(m => m.Price <= filter.MaxPrice);
             }
 
-            return filteredItems.Select(m => new MenuItemDto
+            return await filteredItems.Select(m => new MenuItemDto
             {
                 Id = m.Id,
                 Name = m.Name,
@@ -76,7 +76,7 @@ namespace FoodOrder.Services
                 IsAvailable = m.IsAvailable,
                 CategoryName = m.Category.Name,
                 CategoryId = m.CategoryId
-            }).ToList();
+            }).ToListAsync();
         }
 
         public async Task<MenuItemDto?> GetMenuItemByIdAsync(int id)
