@@ -43,6 +43,8 @@ namespace FoodOrder.IRepositories
     public interface ICategoryRepository : IAsyncRepository<Category>
     {
         Task<IEnumerable<Category>> SearchByNameAsync(string name);
+        Task<Category?> GetByNameAsync(string name);
+        Task<bool> ExistsByNameAsync(string name);
     }
 
     public interface IOrderItemRepository : IAsyncRepository<OrderItem>
