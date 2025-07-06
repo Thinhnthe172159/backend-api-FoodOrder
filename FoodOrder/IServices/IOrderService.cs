@@ -9,5 +9,8 @@ namespace FoodOrder.IServices
         Task<OrderDto> CreateOrderAsync(OrderCreateDto dto);
         Task<bool> UpdateOrderStatusAsync(int id, string status);
         Task<bool> CancelOrderAsync(int id);
+        Task<bool> ConfirmOrderAsync(int orderId, int staffId);
+        Task<bool> MarkAsPaidAsync(int orderId);
     }
+
 }

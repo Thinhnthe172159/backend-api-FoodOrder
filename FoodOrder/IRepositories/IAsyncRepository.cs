@@ -44,4 +44,9 @@ namespace FoodOrder.IRepositories
     {
         Task<IEnumerable<Category>> SearchByNameAsync(string name);
     }
+
+    public interface IOrderItemRepository : IAsyncRepository<OrderItem>
+    {
+        Task<IEnumerable<OrderItem>> ListByOrderIdAsync(int orderId);
+    }
 }

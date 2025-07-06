@@ -1,0 +1,106 @@
+﻿using FoodOrder.IServices;
+using FoodOrderApp.Application.DTOs;
+using Microsoft.AspNetCore.Mvc;
+
+namespace FoodOrder.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class OrderController : ControllerBase
+    {
+        private readonly IOrderService _orderService;
+        private readonly IOrderItemService _orderItemService;
+
+        public OrderController(IOrderService orderService,
+                                IOrderItemService orderItemService)
+        {
+            _orderService = orderService;
+            _orderItemService = orderItemService;
+        }
+
+        /* ------------------------------------------------------------------
+         * 1.  ĐƠN HÀNG (ORDER)
+         * ---------------------------------------------------------------- */
+
+        // GET api/orders?customerId=1&status=paid
+        [HttpGet]
+        public async Task<IActionResult> GetOrders(
+                [FromQuery] int? customerId,
+                [FromQuery] string? status)
+        {
+            var list = await _orderService.GetOrdersAsync(customerId, status);
+            return Ok(list);
+        }
+
+        // GET api/orders/5
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetOrder(int id)
+        {
+            var order = await _orderService.GetOrderByIdAsync(id);
+            return order == null ? NotFound() : Ok(order);
+        }
+
+        // POST api/orders
+        [HttpPost]
+        public async Task<IActionResult> CreateOrder([FromBody] OrderCreateDto dto)
+        {
+            var order = await _orderService.CreateOrderAsync(dto);
+            return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
+        }
+
+        // PUT api/orders/5/status
+        [HttpPut("{id:int}/status")]
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
+        {
+            var ok = await _orderService.UpdateOrderStatusAsync(id, status);
+            return ok ? NoContent() : NotFound();
+        }
+
+        // DELETE api/Cancel/orders/5
+        [HttpPost("Cancel/{id:int}")]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            var ok = await _orderService.CancelOrderAsync(id);
+            return ok ? Ok($"Đã hủy order {id} ") : NotFound($"Khongo tìm thấy order {id}");
+        }
+
+        /* ------------------------------------------------------------------
+         * 2.  CHI TIẾT MÓN (ORDER ITEM)
+         * ---------------------------------------------------------------- */
+
+        // GET api/orders/5/items
+        [HttpGet("{orderId:int}/items")]
+        public async Task<IActionResult> GetItems(int orderId)
+        {
+            var items = await _orderItemService.GetItemsByOrderIdAsync(orderId);
+            return Ok(items);
+        }
+
+        // POST api/orders/5/items
+        [HttpPost("{orderId:int}/items")]
+        public async Task<IActionResult> AddItem(int orderId,
+                        [FromBody] OrderItemCreateDto dto)
+        {
+            dto.OrderId = orderId;                     
+            var item = await _orderItemService.AddItemAsync(dto);
+            return Created(string.Empty, item);        
+        }
+
+        // PUT api/orders/5/items/12/quantity
+        [HttpPut("{orderId:int}/items/{itemId:int}/quantity")]
+        public async Task<IActionResult> UpdateQuantity(
+                int orderId, int itemId, [FromBody] int quantity)
+        {
+            var ok = await _orderItemService.UpdateQuantityAsync(itemId, quantity);
+            return ok ? NoContent() : NotFound();
+        }
+
+        // DELETE api/orders/5/items/12
+        [HttpDelete("{orderId:int}/items/{itemId:int}")]
+        public async Task<IActionResult> RemoveItem(int orderId, int itemId)
+        {
+            var ok = await _orderItemService.RemoveItemAsync(itemId);
+            return ok ? NoContent() : NotFound();
+        }
+    }
+}
