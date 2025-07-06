@@ -4,6 +4,7 @@ using FoodOrder.Dtos;
 using FoodOrder.Models;
 using FoodOrderApp.Application.DTOs;
 using Microsoft.EntityFrameworkCore;
+using FoodOrder.Extentions;
 
 namespace FoodOrder.Services
 {
@@ -12,12 +13,14 @@ namespace FoodOrder.Services
         private readonly IMenuItemRepository _menuItemRepository;
         private readonly ICategoryRepository _categoryRepository;
         private readonly FoodOrderDbContext _context;
+        private readonly CloudinaryService _cloudinaryService;
 
-        public MenuService(IMenuItemRepository menuItemRepository, ICategoryRepository categoryRepository, FoodOrderDbContext foodOrderDbContext)
+        public MenuService(IMenuItemRepository menuItemRepository, ICategoryRepository categoryRepository, FoodOrderDbContext foodOrderDbContext, CloudinaryService cloudinaryService)
         {
             _menuItemRepository = menuItemRepository;
             _categoryRepository = categoryRepository;
             _context = foodOrderDbContext;
+            _cloudinaryService = cloudinaryService;
         }
 
         public async Task<IEnumerable<MenuItemDto>> GetMenuItemsAsync()
@@ -107,12 +110,20 @@ namespace FoodOrder.Services
                     throw new ArgumentException($"Category with ID {dto.CategoryId} not found");
             }
 
+            string? imageUrl = null;
+            if (dto.ImageFile != null && dto.ImageFile.Length > 0)
+            {
+                using var ms = new MemoryStream();
+                await dto.ImageFile.CopyToAsync(ms);
+                imageUrl = await _cloudinaryService.UploadImageAsync(ms.ToArray(), dto.ImageFile.FileName);
+            }
+
             var menuItem = new MenuItem
             {
                 Name = dto.Name,
                 Description = dto.Description,
                 Price = dto.Price,
-                ImageUrl = dto.ImageUrl,
+                ImageUrl = imageUrl,
                 IsAvailable = dto.IsAvailable,
                 CategoryId = dto.CategoryId
             };
@@ -146,10 +157,16 @@ namespace FoodOrder.Services
                     throw new ArgumentException($"Category with ID {dto.CategoryId} not found");
             }
 
+            if (dto.ImageFile != null && dto.ImageFile.Length > 0)
+            {
+                using var ms = new MemoryStream();
+                await dto.ImageFile.CopyToAsync(ms);
+                existingItem.ImageUrl = await _cloudinaryService.UploadImageAsync(ms.ToArray(), dto.ImageFile.FileName);
+            }
+
             existingItem.Name = dto.Name;
             existingItem.Description = dto.Description;
             existingItem.Price = dto.Price;
-            existingItem.ImageUrl = dto.ImageUrl;
             existingItem.IsAvailable = dto.IsAvailable;
             existingItem.CategoryId = dto.CategoryId;
 
