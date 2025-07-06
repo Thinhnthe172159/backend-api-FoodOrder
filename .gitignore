@@ -77,6 +77,11 @@ artifacts/
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
 
+# Ignore appsettings files
+appsettings.json
+appsettings.*.json
+
+
 # StyleCop
 StyleCopReport.xml
 
