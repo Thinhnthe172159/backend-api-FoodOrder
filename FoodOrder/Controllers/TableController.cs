@@ -38,7 +38,7 @@ public class TableController : Controller
     {
         var table = await _tableService.GetTableByIdAsync(id);
         if (table == null)
-            return NotFound();
+            return NotFound("Not Found Any Table");
 
         return Ok(table);
     }
@@ -49,7 +49,7 @@ public class TableController : Controller
     {
         var table = await _tableService.GetTableByQrCode(code);
         if (table == null)
-            return NotFound();
+            return NotFound("Not Found Any Table");
 
         return Ok(table);
     }
@@ -60,9 +60,9 @@ public class TableController : Controller
     {
         var success = await _tableService.UpdateTableStatusAsync(id, dto);
         if (!success)
-            return NotFound();
+            return NotFound("Not Found Any Table");
 
-        return NoContent();
+        return Ok("Update Successfull");
     }
 
 }
