@@ -36,7 +36,7 @@ namespace FoodOrder.Controllers
         }
 
         [HttpPost("items/search")]
-        public async Task<ActionResult<IEnumerable<MenuItemDto>>> SearchMenuItems([FromBody] MenuSearchFilter filter)
+        public async Task<ActionResult<IEnumerable<MenuItemDto>>> SearchMenuItems(MenuSearchFilter filter)
         {
             try
             {

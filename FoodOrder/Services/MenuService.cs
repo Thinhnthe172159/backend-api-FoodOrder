@@ -46,10 +46,13 @@ namespace FoodOrder.Services
 
             if (!string.IsNullOrEmpty(filter.Keyword))
             {
-                filteredItems = filteredItems.Where(m => m.Name.ToLower().Contains(filter.Keyword.ToLower()) || m.Description.ToLower().Contains(filter.Keyword.ToLower()));
+                filteredItems = filteredItems.Where(m =>
+     EF.Functions.Collate(m.Name, "Latin1_General_CI_AI").Contains(filter.Keyword) ||
+     EF.Functions.Collate(m.Description, "Latin1_General_CI_AI").Contains(filter.Keyword));
+
             }
 
-            if (filter.CategoryId.HasValue)
+            if (filter.CategoryId.HasValue && filter.CategoryId != 0)
             {
                 filteredItems = filteredItems.Where(m => m.CategoryId == filter.CategoryId);
             }
@@ -59,15 +62,19 @@ namespace FoodOrder.Services
                 filteredItems = filteredItems.Where(m => m.IsAvailable == filter.IsAvailable);
             }
 
-            if (filter.MinPrice.HasValue)
+            if (filter.MaxPrice != 0 && filter.MinPrice != 0)
             {
-                filteredItems = filteredItems.Where(m => m.Price >= filter.MinPrice);
+                if (filter.MinPrice.HasValue)
+                {
+                    filteredItems = filteredItems.Where(m => m.Price >= filter.MinPrice);
+                }
+
+                if (filter.MaxPrice.HasValue)
+                {
+                    filteredItems = filteredItems.Where(m => m.Price <= filter.MaxPrice);
+                }
             }
 
-            if (filter.MaxPrice.HasValue)
-            {
-                filteredItems = filteredItems.Where(m => m.Price <= filter.MaxPrice);
-            }
 
             return await filteredItems.Select(m => new MenuItemDto
             {
