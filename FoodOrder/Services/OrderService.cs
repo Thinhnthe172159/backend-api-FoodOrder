@@ -164,7 +164,7 @@ namespace FoodOrder.Services
         public async Task<bool> MarkAsPaidAsync(int orderId)
         {
             var order = await _orderRepository.GetByIdAsync(orderId);
-            if (order == null || order.Status != OrderStatus.Served)
+            if (order == null || order.Status != OrderStatus.Preparing)
                 return false;
 
             order.Status = OrderStatus.Paid;
@@ -186,7 +186,6 @@ namespace FoodOrder.Services
     {
         public const string Pending = "pending";
         public const string Preparing = "preparing";
-        public const string Served = "served";
         public const string Paid = "paid";
         public const string Cancelled = "cancelled";
     }

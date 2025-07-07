@@ -1,6 +1,7 @@
 ﻿using FoodOrder.Dtos;
 using FoodOrder.IServices;
 using FoodOrderApp.Application.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

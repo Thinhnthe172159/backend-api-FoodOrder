@@ -73,8 +73,7 @@ namespace FoodOrder.Services
                 FullName = user.FullName,
                 Phone = user.Phone,
                 Email = user.Email,
-                RoleId = user.RoleId,
-                RoleName = user.Role.Name
+                RoleId = user.RoleId
             };
         }
 

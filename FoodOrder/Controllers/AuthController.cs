@@ -64,9 +64,15 @@ namespace FoodOrder.Controllers
         public async Task<ActionResult<UserDto>> Register([FromBody] RegisterDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            var user = await _authService.RegisterAsync(dto);
-            return CreatedAtAction(nameof(Register), new { id = user.Id }, user);
+            try
+            {
+                var user = await _authService.RegisterAsync(dto);
+                return CreatedAtAction(nameof(Register), new { id = user.Id }, user);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>

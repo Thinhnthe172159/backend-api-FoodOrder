@@ -1,9 +1,11 @@
 ﻿using FoodOrder.Extensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrder.Controllers
 {
+    [Authorize(Roles = "Manager")]
     [ApiController]
     [Route("api/qr")]
     public class QrController : ControllerBase
