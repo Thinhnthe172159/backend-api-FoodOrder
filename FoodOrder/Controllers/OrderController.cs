@@ -1,6 +1,9 @@
 ﻿using FoodOrder.IServices;
 using FoodOrderApp.Application.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using System.Security.Claims;
 
 namespace FoodOrder.Controllers
 {
@@ -125,5 +128,17 @@ namespace FoodOrder.Controllers
             return Ok(list);
         }
 
+        [Authorize]
+        [HttpPost("getMyCurrentOrder")]
+        public async Task<IActionResult> GetMyCurrentOrder()
+        {
+            var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(id))
+            {
+                var list = await _orderService.GetAllCurrentOrderByCustomer(int.Parse(id));
+                return Ok(list);
+            }
+            return BadRequest("Chưa đăng nhập");
+        }
     }
 }

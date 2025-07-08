@@ -196,6 +196,11 @@ namespace FoodOrder.Services
         {
             return _orderRepository.SearchOrderAsynce(data);
         }
+
+        public Task<IEnumerable<OrderDto>> GetAllCurrentOrderByCustomer(int id)
+        {
+            return _orderRepository.GetAllCurrentOrderByCustomer(id);
+        }
     }
 
     public static class OrderStatus

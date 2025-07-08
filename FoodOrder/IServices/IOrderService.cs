@@ -13,6 +13,7 @@ namespace FoodOrder.IServices
         Task<bool> MarkAsPaidAsync(int orderId);
 
         Task<IEnumerable<OrderDto>> SearchOrderAsync(OrderDto data);
+        Task<IEnumerable<OrderDto>> GetAllCurrentOrderByCustomer(int id);
     }
 
 }

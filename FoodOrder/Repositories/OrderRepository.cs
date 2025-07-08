@@ -1,5 +1,6 @@
 ﻿using FoodOrder.IRepositories;
 using FoodOrder.Models;
+using FoodOrder.Services;
 using FoodOrderApp.Application.DTOs;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,32 @@ namespace FoodOrder.Repositories
     {
         public OrderRepository(FoodOrderDbContext context) : base(context)
         {
+        }
+
+        public async Task<IEnumerable<OrderDto>> GetAllCurrentOrderByCustomer(int id)
+        {
+            var orderLists = _context.Orders.Include(o => o.Customer).Include(o => o.Table).Include(o => o.OrderItems).ThenInclude(o => o.MenuItem).Where(o=>o.CustomerId == id && o.Status!= OrderStatus.Cancelled && o.Status!=OrderStatus.Paid).OrderByDescending(o=>o.CreatedAt).AsQueryable();
+            return await orderLists.Select(o => new OrderDto
+            {
+                Id = o.Id,
+                CustomerId = o.CustomerId,
+                CustomerName = o.Customer.Username,
+                CreatedAt = o.CreatedAt.ToString(),
+                Status = o.Status,
+                ConfirmedBy = o.ConfirmedBy,
+                TableId = o.TableId,
+                TableName = o.Table.TableNumber,
+                TotalAmount = o.TotalAmount,
+                PaidAt = o.PaidAt.ToString(),
+                Items = o.OrderItems.Select(x => new OrderItemDto
+                {
+                    MenuItemId = x.Id,
+                    MenuItemName = x.MenuItem.Name,
+                    Note = x.Note,
+                    Price = x.Price,
+                    Quantity = x.Quantity
+                }).ToList()
+            }).ToListAsync();
         }
 
         public async Task<IEnumerable<Order>> ListByCustomerAsync(int customerId)
@@ -23,7 +50,7 @@ namespace FoodOrder.Repositories
 
         public async Task<IEnumerable<OrderDto>> SearchOrderAsynce(OrderDto orderDto)
         {
-            var orderLists = _context.Orders.Include(o => o.Customer).Include(o => o.Table).Include(o => o.OrderItems).ThenInclude(o => o.MenuItem).AsSingleQuery();
+            var orderLists = _context.Orders.Include(o => o.Customer).Include(o => o.Table).Include(o => o.OrderItems).ThenInclude(o => o.MenuItem).AsQueryable();
             if (orderDto.CustomerId.HasValue && orderDto.CustomerId != 0)
             {
                 orderLists = orderLists.Where(o => o.CustomerId == orderDto.CustomerId);
