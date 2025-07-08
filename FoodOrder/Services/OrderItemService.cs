@@ -31,6 +31,14 @@ namespace FoodOrder.Services
 
             var order = await _orderRepo.GetByIdAsync(dto.OrderId);
             if (order == null) return false;
+            if (order.Status == OrderStatus.Cancelled)
+            {
+                throw new Exception("Order đã bị hủy!");
+            }
+            if(order.Status == OrderStatus.Paid)
+            {
+                throw new Exception("Đơn hàng đã thanh toán rồi!");
+            }
 
             decimal price = menuItem.Price;
 

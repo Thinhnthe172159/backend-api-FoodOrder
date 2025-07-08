@@ -11,6 +11,8 @@ namespace FoodOrder.IServices
         Task<bool> CancelOrderAsync(int id);
         Task<bool> ConfirmOrderAsync(int orderId, int staffId);
         Task<bool> MarkAsPaidAsync(int orderId);
+
+        Task<IEnumerable<OrderDto>> SearchOrderAsync(OrderDto data);
     }
 
 }

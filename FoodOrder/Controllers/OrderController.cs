@@ -52,16 +52,31 @@ namespace FoodOrder.Controllers
         [HttpPut("{id:int}/status")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
         {
-            var ok = await _orderService.UpdateOrderStatusAsync(id, status);
-            return ok ? NoContent() : NotFound();
+            try
+            {
+                var ok = await _orderService.UpdateOrderStatusAsync(id, status);
+                return ok ? Ok("Cập nhật trạng thái thành công") : NotFound("Không tìm thấy order");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         // DELETE api/Cancel/orders/5
         [HttpPost("Cancel/{id:int}")]
         public async Task<IActionResult> Cancel(int id)
         {
-            var ok = await _orderService.CancelOrderAsync(id);
-            return ok ? Ok($"Đã hủy order {id} ") : NotFound($"Khongo tìm thấy order {id}");
+            try
+            {
+                var ok = await _orderService.CancelOrderAsync(id);
+                return ok ? Ok($"Đã hủy order {id} ") : NotFound($"Khongo tìm thấy order {id}");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /* ------------------------------------------------------------------
@@ -81,9 +96,9 @@ namespace FoodOrder.Controllers
         public async Task<IActionResult> AddItem(int orderId,
                         [FromBody] OrderItemCreateDto dto)
         {
-            dto.OrderId = orderId;                     
+            dto.OrderId = orderId;
             var item = await _orderItemService.AddItemAsync(dto);
-            return Created(string.Empty, item);        
+            return Created(string.Empty, item);
         }
 
         // PUT api/orders/5/items/12/quantity
@@ -102,5 +117,13 @@ namespace FoodOrder.Controllers
             var ok = await _orderItemService.RemoveItemAsync(itemId);
             return ok ? NoContent() : NotFound();
         }
+
+        [HttpPost("SearchOrder")]
+        public async Task<IActionResult> FilterOrder(OrderDto dto)
+        {
+            var list = await _orderService.SearchOrderAsync(dto);
+            return Ok(list);
+        }
+
     }
 }

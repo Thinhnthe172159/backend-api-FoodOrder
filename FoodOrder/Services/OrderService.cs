@@ -19,8 +19,20 @@ namespace FoodOrder.Services
 
         public async Task<bool> CancelOrderAsync(int id)
         {
-            var order = await _orderRepository.GetByIdAsync(id);
+            var order = await _context.Orders.Include(o => o.OrderItems).FirstOrDefaultAsync(o => o.Id == id);
             if (order == null) return false;
+            if (order.OrderItems.Count != 0)
+            {
+                if (order.Status == OrderStatus.Preparing)
+                {
+                    throw new Exception("Bạn không thể hủy khi bàn khi chưa thanh toán");
+                }
+                if(order.Status == OrderStatus.Paid || order.Status == OrderStatus.Cancelled)
+                {
+                    throw new Exception("Order này không còn khả dụng");
+                }
+            }
+
 
             order.Status = OrderStatus.Cancelled;
             await _orderRepository.UpdateAsync(order);
@@ -180,6 +192,10 @@ namespace FoodOrder.Services
             return true;
         }
 
+        public Task<IEnumerable<OrderDto>> SearchOrderAsync(OrderDto data)
+        {
+            return _orderRepository.SearchOrderAsynce(data);
+        }
     }
 
     public static class OrderStatus

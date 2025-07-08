@@ -31,6 +31,7 @@ namespace FoodOrder.IRepositories
 
     public interface IOrderRepository : IAsyncRepository<Order>
     {
+        Task<IEnumerable<OrderDto>> SearchOrderAsynce(OrderDto orderDto);
         Task<IEnumerable<Order>> ListByCustomerAsync(int customerId);
         Task<IEnumerable<Order>> ListByStatusAsync(string status);
     }

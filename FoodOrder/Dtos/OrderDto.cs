@@ -2,7 +2,7 @@ using FoodOrderApp.Application.DTOs;
 
 public class OrderDto
 {
-    public int Id { get; set; }
+    public int? Id { get; set; }
 
     public int? CustomerId { get; set; }
     public string? CustomerName { get; set; }          
