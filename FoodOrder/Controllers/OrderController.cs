@@ -44,9 +44,13 @@ namespace FoodOrder.Controllers
         }
 
         // POST api/orders
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateOrder([FromBody] OrderCreateDto dto)
         {
+            var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (id == null) return NotFound("Not found user");
+            dto.CustomerId = int.Parse(id.ToString());
             var order = await _orderService.CreateOrderAsync(dto);
             return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
         }
@@ -82,6 +86,17 @@ namespace FoodOrder.Controllers
             }
         }
 
+        [HttpPost("Confirm_order")]
+        public async Task<IActionResult> ConfirmOrder(int id)
+        {
+            var staffId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(staffId))
+            {
+                var result = await _orderService.ConfirmOrderAsync(id, int.Parse(staffId));
+                return result ? Ok("Xác thực thành công") : BadRequest("Xác thực thất bại");
+            }
+            return BadRequest("Xác thực thất bại");
+        }
         /* ------------------------------------------------------------------
          * 2.  CHI TIẾT MÓN (ORDER ITEM)
          * ---------------------------------------------------------------- */
@@ -105,12 +120,11 @@ namespace FoodOrder.Controllers
         }
 
         // PUT api/orders/5/items/12/quantity
-        [HttpPut("{orderId:int}/items/{itemId:int}/quantity")]
-        public async Task<IActionResult> UpdateQuantity(
-                int orderId, int itemId, [FromBody] int quantity)
+        [HttpPost("UpdateQuantityOrderItem")]
+        public async Task<IActionResult> UpdateQuantity(OrderItemDto dto)
         {
-            var ok = await _orderItemService.UpdateQuantityAsync(itemId, quantity);
-            return ok ? NoContent() : NotFound();
+            var ok = await _orderItemService.UpdateQuantityAsync(dto.Id ?? 0, dto.Quantity);
+            return ok ? Ok("Đã cập nhật số lượng thành công") : NotFound("Cập nhật không thành công");
         }
 
         // DELETE api/orders/5/items/12

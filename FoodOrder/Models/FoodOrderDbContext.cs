@@ -97,6 +97,8 @@ public partial class FoodOrderDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__OrderIte__3214EC07BEF864C6");
 
             entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.Status)
+            .HasDefaultValue(0);
 
             entity.HasOne(d => d.MenuItem).WithMany(p => p.OrderItems)
                 .HasForeignKey(d => d.MenuItemId)

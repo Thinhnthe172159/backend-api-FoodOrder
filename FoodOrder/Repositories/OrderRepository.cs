@@ -2,6 +2,7 @@
 using FoodOrder.Models;
 using FoodOrder.Services;
 using FoodOrderApp.Application.DTOs;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodOrder.Repositories
@@ -29,11 +30,14 @@ namespace FoodOrder.Repositories
                 PaidAt = o.PaidAt.ToString(),
                 Items = o.OrderItems.Select(x => new OrderItemDto
                 {
-                    MenuItemId = x.Id,
+                    Id = x.Id,
+                    MenuItemId = x.MenuItemId,
                     MenuItemName = x.MenuItem.Name,
                     Note = x.Note,
                     Price = x.Price,
-                    Quantity = x.Quantity
+                    Quantity = x.Quantity,
+                    Image = x.MenuItem.ImageUrl,
+                    Status = x.Status == 0 ? "Pending":"Serving"
                 }).ToList()
             }).ToListAsync();
         }
@@ -67,6 +71,13 @@ namespace FoodOrder.Repositories
             {
                 orderLists = orderLists.Where(o => o.Status == orderDto.Status);
             }
+            if (!string.IsNullOrEmpty(orderDto.CreatedAt))
+            {
+                DateTime dateTime = DateTime.Now;
+                DateTime dateTime1 = new DateTime(dateTime.Year,dateTime.Month,dateTime.Day,0,0,0);
+                DateTime dateTime2 = new DateTime(dateTime.Year,dateTime.Month,dateTime.Day,23,59,50);
+                orderLists = orderLists.Where(o => o.CreatedAt >= dateTime1 && o.CreatedAt <= dateTime2 );
+            }
 
             return await orderLists.Select(o => new OrderDto
             {
@@ -82,11 +93,14 @@ namespace FoodOrder.Repositories
                 PaidAt = o.PaidAt.ToString(),
                 Items = o.OrderItems.Select(x => new OrderItemDto
                 {
-                    MenuItemId = x.Id,
+                    Id = x.Id ,
+                    MenuItemId = x.MenuItemId,
                     MenuItemName = x.MenuItem.Name,
                     Note = x.Note,
                     Price = x.Price,
-                    Quantity = x.Quantity
+                    Quantity = x.Quantity,
+                    Image = x.MenuItem.ImageUrl,
+                    Status = x.Status == 0 ? "Pending" : "Serving"
                 }).ToList()
             }).ToListAsync();
         }

@@ -3,6 +3,8 @@ using FoodOrder.IServices;
 using FoodOrder.Models;
 using FoodOrderApp.Application.DTOs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
+using static FoodOrder.Services.OrderItemService;
 
 namespace FoodOrder.Services
 {
@@ -27,7 +29,7 @@ namespace FoodOrder.Services
                 {
                     throw new Exception("Bạn không thể hủy khi bàn khi chưa thanh toán");
                 }
-                if(order.Status == OrderStatus.Paid || order.Status == OrderStatus.Cancelled)
+                if (order.Status == OrderStatus.Paid || order.Status == OrderStatus.Cancelled)
                 {
                     throw new Exception("Order này không còn khả dụng");
                 }
@@ -95,7 +97,7 @@ namespace FoodOrder.Services
                     TotalAmount = o.TotalAmount,
                     PaidAt = o.PaidAt.ToString(),
                     ConfirmedBy = o.ConfirmedBy,
-                    Items = o.OrderItems.Select(i => new OrderItemDto { MenuItemId = i.Id, MenuItemName = i.MenuItem.Name, Quantity = i.Quantity, Note = i.Note, Price = i.Price }).ToList()
+                    Items = o.OrderItems.Select(i => new OrderItemDto { Id = i.Id,MenuItemId = i.MenuItemId, MenuItemName = i.MenuItem.Name, Quantity = i.Quantity, Note = i.Note, Price = i.Price, Image = i.MenuItem.ImageUrl, Status = i.Status == 0 ? "Pending" : "Serving" }).ToList()
                 })
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
@@ -122,11 +124,14 @@ namespace FoodOrder.Services
                     PaidAt = o.PaidAt.ToString(),
                     Items = o.OrderItems.Select(i => new OrderItemDto
                     {
+                        Id = i.Id,
                         MenuItemId = i.MenuItemId,
                         MenuItemName = i.MenuItem.Name,
                         Quantity = i.Quantity,
                         Note = i.Note,
-                        Price = i.Price
+                        Price = i.Price,
+                        Image = i.MenuItem.ImageUrl,
+                        Status = i.Status == 0 ? "Pending" : "Serving"
                     }).ToList()
                 })
                 .ToListAsync();
@@ -144,7 +149,7 @@ namespace FoodOrder.Services
             {
                 order.Status = status;
                 await _orderRepository.UpdateAsync(order);
-                if (status == "done")
+                if (status == "cancelled" || status == "paid")
                 {
                     var table = await _context.Tables.FindAsync(order.TableId);
                     if (table != null)
@@ -160,18 +165,34 @@ namespace FoodOrder.Services
                 throw new Exception(ex.Message);
             }
         }
-
+        // xác thực order và các món được chọn
         public async Task<bool> ConfirmOrderAsync(int orderId, int staffId)
         {
             var order = await _orderRepository.GetByIdAsync(orderId);
-            if (order == null || order.Status != OrderStatus.Pending)
+            if (order == null)
                 return false;
+            if (order.Status == OrderStatus.Pending || order.Status == OrderStatus.Update)
+            {
+                order.Status = OrderStatus.Preparing;
+                order.ConfirmedBy = staffId;
 
-            order.Status = OrderStatus.Preparing;
-            order.ConfirmedBy = staffId;
-            await _orderRepository.UpdateAsync(order);
-            return true;
+                var orderMenuItemList = await _context.OrderItems.Where(o => o.OrderId == order.Id).ToListAsync();
+                foreach (var item in orderMenuItemList)
+                {
+                    if (item.Status == OrderItemStatus.Pending)
+                    {
+                        item.Status = OrderItemStatus.Serving;
+                        _context.OrderItems.Update(item);
+                    }
+                }
+                await _context.SaveChangesAsync();
+                await _orderRepository.UpdateAsync(order);
+                return true;
+            }
+
+            return false;
         }
+
 
         public async Task<bool> MarkAsPaidAsync(int orderId)
         {
@@ -209,6 +230,7 @@ namespace FoodOrder.Services
         public const string Preparing = "preparing";
         public const string Paid = "paid";
         public const string Cancelled = "cancelled";
+        public const string Update = "update";
     }
 
 

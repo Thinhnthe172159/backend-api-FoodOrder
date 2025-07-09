@@ -17,6 +17,8 @@ public partial class OrderItem
 
     public decimal Price { get; set; }
 
+    public int Status { get; set; } = 0;
+
     public virtual MenuItem? MenuItem { get; set; }
 
     public virtual Order? Order { get; set; }
