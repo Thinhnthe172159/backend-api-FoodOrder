@@ -44,9 +44,13 @@ namespace FoodOrder.Controllers
         }
 
         // POST api/orders
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateOrder([FromBody] OrderCreateDto dto)
         {
+            var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (id == null) return NotFound("Not found user");
+            dto.CustomerId = int.Parse(id.ToString());
             var order = await _orderService.CreateOrderAsync(dto);
             return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
         }

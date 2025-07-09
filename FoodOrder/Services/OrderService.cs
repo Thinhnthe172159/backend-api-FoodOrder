@@ -95,7 +95,7 @@ namespace FoodOrder.Services
                     TotalAmount = o.TotalAmount,
                     PaidAt = o.PaidAt.ToString(),
                     ConfirmedBy = o.ConfirmedBy,
-                    Items = o.OrderItems.Select(i => new OrderItemDto { MenuItemId = i.Id, MenuItemName = i.MenuItem.Name, Quantity = i.Quantity, Note = i.Note, Price = i.Price }).ToList()
+                    Items = o.OrderItems.Select(i => new OrderItemDto { MenuItemId = i.Id, MenuItemName = i.MenuItem.Name, Quantity = i.Quantity, Note = i.Note, Price = i.Price ,Image = i.MenuItem.ImageUrl }).ToList()
                 })
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
@@ -126,7 +126,8 @@ namespace FoodOrder.Services
                         MenuItemName = i.MenuItem.Name,
                         Quantity = i.Quantity,
                         Note = i.Note,
-                        Price = i.Price
+                        Price = i.Price,
+                        Image = i.MenuItem.ImageUrl
                     }).ToList()
                 })
                 .ToListAsync();

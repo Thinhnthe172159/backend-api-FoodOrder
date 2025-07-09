@@ -1,8 +1,10 @@
 ﻿using FoodOrder.IServices;
 using FoodOrder.Models;
 using FoodOrderApp.Application.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FoodOrder.Controllers
 {
@@ -26,21 +28,31 @@ namespace FoodOrder.Controllers
         }
 
         // GET: api/users/5
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<UserDto>> GetUserById(int id)
+        [Authorize]
+        [HttpGet("/userProfile")]
+        public async Task<ActionResult<UserDto>> GetUserById()
         {
-            var user = await _userService.GetUserDetailsByIdAsync(id);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+            {
+                return BadRequest("Lỗi chưa đăng nhập!");
+            }
+            var user = await _userService.GetUserDetailsByIdAsync(int.Parse(userId));
             if (user == null) return NotFound();
             return Ok(user);
         }
 
         // PUT: api/users/5
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDto dto)
+        [Authorize]
+        [HttpPut("updateProfile")]
+        public async Task<IActionResult> UpdateUser([FromBody] UserDto dto)
         {
-            if (id != dto.Id) return BadRequest("Id không khớp.");
-
-            var updated = await _userService.UpdateUserProfileAsync(id, dto);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+            {
+                return BadRequest("Lỗi chưa đăng nhập!");
+            }
+            var updated = await _userService.UpdateUserProfileAsync(int.Parse(userId), dto);
             return Ok(updated);
         }
 

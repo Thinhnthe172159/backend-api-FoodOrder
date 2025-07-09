@@ -70,7 +70,8 @@ namespace FoodOrder.Services
                 MenuItemName = i.MenuItem?.Name ?? "",
                 Quantity = i.Quantity,
                 Note = i.Note,
-                Price = i.Price
+                Price = i.Price,
+                Image = i.MenuItem?.ImageUrl
             });
         }
 
