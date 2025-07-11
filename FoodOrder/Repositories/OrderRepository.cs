@@ -38,7 +38,7 @@ namespace FoodOrder.Repositories
                     Quantity = x.Quantity,
                     Image = x.MenuItem.ImageUrl,
                     Status = x.Status == 0 ? "Pending":"Serving"
-                }).ToList()
+                }).OrderByDescending(x => x.Id).ToList()
             }).ToListAsync();
         }
 
@@ -101,7 +101,7 @@ namespace FoodOrder.Repositories
                     Quantity = x.Quantity,
                     Image = x.MenuItem.ImageUrl,
                     Status = x.Status == 0 ? "Pending" : "Serving"
-                }).ToList()
+                }).OrderByDescending(x => x.Id).ToList()
             }).ToListAsync();
         }
     }

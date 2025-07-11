@@ -1,12 +1,14 @@
 ﻿using FoodOrder.Dtos;
 using FoodOrder.Extensions;
 using FoodOrder.Extentions;
+using FoodOrder.Hubs;
 using FoodOrder.IRepositories;
 using FoodOrder.IServices;
 using FoodOrder.Models;
 using FoodOrder.Repositories;
 using FoodOrder.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -72,6 +74,24 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ClockSkew = TimeSpan.Zero
     };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+
+            // Nếu request là đến Hub thì lấy token từ query string
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        }
+    };
+
 });
 
 // đăng ký service ở đây
@@ -96,9 +116,11 @@ builder.Services.AddScoped<ITableRepository, TableRepository>();
 
 // đăng ký dịch vụ khác
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
 builder.Services.AddSingleton<CloudinaryService>();
 builder.Services.AddTransient<QrCodeCloudService>();
+builder.Services.AddSignalR();
 
 
 var app = builder.Build();
@@ -111,10 +133,12 @@ app.UseSwaggerUI();
 //}
 
 app.UseHttpsRedirection();
+app.UseRouting();
 app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.Run();
