@@ -124,7 +124,7 @@ namespace FoodOrder.Controllers
         public async Task<IActionResult> UpdateQuantity(OrderItemDto dto)
         {
             var ok = await _orderItemService.UpdateQuantityAsync(dto.Id ?? 0, dto.Quantity);
-            return ok ? Ok("Đã cập nhật số lượng thành công") : NotFound("Cập nhật không thành công");
+            return ok ? Ok(true) : NotFound(false);
         }
 
         // DELETE api/orders/5/items/12
