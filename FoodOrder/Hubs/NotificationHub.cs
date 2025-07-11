@@ -1,5 +1,4 @@
-﻿using FoodOrder.Dtos;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 
 namespace FoodOrder.Hubs
@@ -30,7 +29,7 @@ namespace FoodOrder.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        // 🔸 Khách gửi cho tất cả nhân viên
+        // Khách gửi cho tất cả nhân viên
         public async Task SendToAllStaff(string title, string message)
         {
             var role = Context.User?.FindFirst(ClaimTypes.Role)?.Value;
@@ -39,19 +38,10 @@ namespace FoodOrder.Hubs
 
             if (role?.ToLower() != "customer") return;
 
-            var dto = new NotificationDto
-            {
-                Title = title,
-                Message = message,
-                SenderId = senderId,
-                SenderName = senderName
-            };
-
-            await Clients.Group("Staffs").SendAsync("ReceiveNotification", dto);
+            await Clients.Group("Staffs").SendAsync("ReceiveNotification", title, message, senderId, senderName);
         }
 
-
-        // 🔸 Nhân viên phản hồi lại cho 1 khách
+        // Nhân viên phản hồi lại cho 1 khách
         public async Task ReplyToCustomer(string customerUserId, string title, string message)
         {
             var role = Context.User?.FindFirst(ClaimTypes.Role)?.Value;
@@ -63,7 +53,4 @@ namespace FoodOrder.Hubs
             await Clients.User(customerUserId).SendAsync("ReceiveNotification", title, message, senderId, senderName);
         }
     }
-
-
-
 }
