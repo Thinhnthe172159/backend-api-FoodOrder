@@ -197,11 +197,11 @@ namespace FoodOrder.Services
         public async Task<bool> MarkAsPaidAsync(int orderId)
         {
             var order = await _orderRepository.GetByIdAsync(orderId);
-            if (order == null || order.Status != OrderStatus.Preparing)
+            if (order == null)
                 return false;
 
             order.Status = OrderStatus.Paid;
-            order.PaidAt = DateTime.UtcNow;
+            order.PaidAt = DateTime.Now;
             await _orderRepository.UpdateAsync(order);
 
             var table = await _context.Tables.FindAsync(order.TableId);
