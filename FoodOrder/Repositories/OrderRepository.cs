@@ -1,4 +1,5 @@
-﻿using FoodOrder.IRepositories;
+﻿using FoodOrder.Extentions;
+using FoodOrder.IRepositories;
 using FoodOrder.Models;
 using FoodOrder.Services;
 using FoodOrderApp.Application.DTOs;
@@ -74,7 +75,7 @@ namespace FoodOrder.Repositories
             }
             if (!string.IsNullOrEmpty(orderDto.CreatedAt))
             {
-                DateTime dateTime = DateTime.Now;
+                DateTime dateTime = TimeZoneChange.ConvertToTimeZone(DateTime.UtcNow, "SE Asia Standard Time");
                 DateTime dateTime1 = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, 0, 0, 0);
                 DateTime dateTime2 = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, 23, 59, 50);
                 orderLists = orderLists.Where(o => o.CreatedAt >= dateTime1 && o.CreatedAt <= dateTime2);
@@ -103,7 +104,7 @@ namespace FoodOrder.Repositories
                     Image = x.MenuItem.ImageUrl,
                     Status = OrderItemStatus.getStatusItemOrder(x.Status)
                 }).OrderByDescending(x => x.Id).ToList()
-            }).ToListAsync();
+            }).OrderByDescending(c=>c.CreatedAt).ToListAsync();
         }
     }
 }
