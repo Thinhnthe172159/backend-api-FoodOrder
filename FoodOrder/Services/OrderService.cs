@@ -1,7 +1,10 @@
-﻿using FoodOrder.IRepositories;
+﻿using FoodOrder.Extentions;
+using FoodOrder.Hubs;
+using FoodOrder.IRepositories;
 using FoodOrder.IServices;
 using FoodOrder.Models;
 using FoodOrderApp.Application.DTOs;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using static FoodOrder.Services.OrderItemService;
@@ -12,12 +15,26 @@ namespace FoodOrder.Services
     {
         private readonly IOrderRepository _orderRepository;
         private readonly FoodOrderDbContext _context;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public OrderService(IOrderRepository orderRepository, FoodOrderDbContext context)
+        public OrderService(
+         IOrderRepository orderRepository,
+         FoodOrderDbContext context,
+         IHubContext<NotificationHub> hubContext)
         {
             _orderRepository = orderRepository;
             _context = context;
+            _hubContext = hubContext;
         }
+
+        private async Task NotifyCustomerOrderUpdatedAsync(Order order)
+        {
+            var orderDto = await GetOrderByIdAsync(order.Id); 
+
+            await _hubContext.Clients.User(order.CustomerId.ToString())
+                .SendAsync("OrderStatusUpdated", orderDto);
+        }
+
 
         public async Task<bool> CancelOrderAsync(int id)
         {
@@ -43,8 +60,8 @@ namespace FoodOrder.Services
             {
                 if (item.Status == OrderItemStatus.Canncel)
                 {
-                    item.Status = OrderItemStatus.Canncel;
-                    _context.OrderItems.Update(item);
+                  //  item.Status = OrderItemStatus.Canncel;
+                    _context.OrderItems.Remove(item);
                 }
             }
 
@@ -54,6 +71,7 @@ namespace FoodOrder.Services
                 table.Status = "available";
                 await _context.SaveChangesAsync();
             }
+            await NotifyCustomerOrderUpdatedAsync(order);
             return true;
         }
 
@@ -73,7 +91,7 @@ namespace FoodOrder.Services
                 CustomerId = dto.CustomerId,
                 TableId = dto.TableId,
                 Status = OrderStatus.Pending,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = TimeZoneChange.ConvertToTimeZone(DateTime.UtcNow, "SE Asia Standard Time"),
                 TotalAmount = 0
             };
             await _orderRepository.AddAsync(order);
@@ -188,7 +206,7 @@ namespace FoodOrder.Services
                 var orderMenuItemList = await _context.OrderItems.Where(o => o.OrderId == order.Id).ToListAsync();
                 foreach (var item in orderMenuItemList)
                 {
-                    if (item.Status == OrderItemStatus.Pending)
+                    if (item.Status == OrderItemStatus.Pending || item.Status == OrderItemStatus.Update)
                     {
                         item.Status = OrderItemStatus.Serving;
                         _context.OrderItems.Update(item);
@@ -196,6 +214,7 @@ namespace FoodOrder.Services
                 }
                 await _context.SaveChangesAsync();
                 await _orderRepository.UpdateAsync(order);
+                await NotifyCustomerOrderUpdatedAsync(order);
                 return true;
             }
 
@@ -208,15 +227,17 @@ namespace FoodOrder.Services
             var order = await _orderRepository.GetByIdAsync(orderId);
             if (order == null)
                 return false;
-
+            if (order.Status == OrderStatus.Paid) return false;
             order.Status = OrderStatus.Paid;
-            order.PaidAt = DateTime.Now;
-            await _orderRepository.UpdateAsync(order);
 
+
+            order.PaidAt = TimeZoneChange.ConvertToTimeZone(DateTime.UtcNow, "SE Asia Standard Time");
+
+            await _orderRepository.UpdateAsync(order);
             var orderMenuItemList = await _context.OrderItems.Where(o => o.OrderId == order.Id).ToListAsync();
             foreach (var item in orderMenuItemList)
             {
-                if (item.Status == OrderItemStatus.Paid)
+                if (item.Status != OrderItemStatus.Paid)
                 {
                     item.Status = OrderItemStatus.Paid;
                     _context.OrderItems.Update(item);
@@ -229,6 +250,7 @@ namespace FoodOrder.Services
                 table.Status = "available";
                 await _context.SaveChangesAsync();
             }
+            await NotifyCustomerOrderUpdatedAsync(order);
             return true;
         }
 

@@ -36,7 +36,7 @@ namespace FoodOrder.Services
                 IsAvailable = m.IsAvailable,
                 CategoryName = m.Category?.Name,
                 CategoryId = m.CategoryId
-            });
+            }).OrderBy(m=>m.CategoryId);
         }
 
         public async Task<IEnumerable<MenuItemDto>> SearchMenuItemsAsync(MenuSearchFilter filter)
