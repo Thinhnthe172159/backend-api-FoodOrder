@@ -38,6 +38,15 @@ namespace FoodOrder.Services
 
             order.Status = OrderStatus.Cancelled;
             await _orderRepository.UpdateAsync(order);
+            var orderMenuItemList = await _context.OrderItems.Where(o => o.OrderId == order.Id).ToListAsync();
+            foreach (var item in orderMenuItemList)
+            {
+                if (item.Status == OrderItemStatus.Canncel)
+                {
+                    item.Status = OrderItemStatus.Canncel;
+                    _context.OrderItems.Update(item);
+                }
+            }
 
             var table = await _context.Tables.FindAsync(order.TableId);
             if (table != null)
@@ -97,7 +106,7 @@ namespace FoodOrder.Services
                     TotalAmount = o.TotalAmount,
                     PaidAt = o.PaidAt.ToString(),
                     ConfirmedBy = o.ConfirmedBy,
-                    Items = o.OrderItems.Select(i => new OrderItemDto { Id = i.Id,MenuItemId = i.MenuItemId, MenuItemName = i.MenuItem.Name, Quantity = i.Quantity, Note = i.Note, Price = i.Price, Image = i.MenuItem.ImageUrl, Status = i.Status == 0 ? "Pending" : "Serving" }).OrderByDescending(i=>i.Id).ToList()
+                    Items = o.OrderItems.Select(i => new OrderItemDto { Id = i.Id,MenuItemId = i.MenuItemId, MenuItemName = i.MenuItem.Name, Quantity = i.Quantity, Note = i.Note, Price = i.Price, Image = i.MenuItem.ImageUrl, Status = OrderItemStatus.getStatusItemOrder(i.Status) }).OrderByDescending(i=>i.Id).ToList()
                 })
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
@@ -131,7 +140,7 @@ namespace FoodOrder.Services
                         Note = i.Note,
                         Price = i.Price,
                         Image = i.MenuItem.ImageUrl,
-                        Status = i.Status == 0 ? "Pending" : "Serving"
+                        Status = OrderItemStatus.getStatusItemOrder(i.Status)
                     }).OrderByDescending(i => i.Id).ToList()
                 })
                 .ToListAsync();
@@ -197,12 +206,22 @@ namespace FoodOrder.Services
         public async Task<bool> MarkAsPaidAsync(int orderId)
         {
             var order = await _orderRepository.GetByIdAsync(orderId);
-            if (order == null || order.Status != OrderStatus.Preparing)
+            if (order == null)
                 return false;
 
             order.Status = OrderStatus.Paid;
-            order.PaidAt = DateTime.UtcNow;
+            order.PaidAt = DateTime.Now;
             await _orderRepository.UpdateAsync(order);
+
+            var orderMenuItemList = await _context.OrderItems.Where(o => o.OrderId == order.Id).ToListAsync();
+            foreach (var item in orderMenuItemList)
+            {
+                if (item.Status == OrderItemStatus.Paid)
+                {
+                    item.Status = OrderItemStatus.Paid;
+                    _context.OrderItems.Update(item);
+                }
+            }
 
             var table = await _context.Tables.FindAsync(order.TableId);
             if (table != null)

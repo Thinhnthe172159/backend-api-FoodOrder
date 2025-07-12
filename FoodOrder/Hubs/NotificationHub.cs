@@ -52,5 +52,16 @@ namespace FoodOrder.Hubs
 
             await Clients.User(customerUserId).SendAsync("ReceiveNotification", title, message, senderId, senderName);
         }
+
+        public async Task SendToAllStaffWithData(string title, string message, string orderId, string tableId)
+        {
+            var role = Context.User?.FindFirst(ClaimTypes.Role)?.Value;
+            var senderId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var senderName = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
+
+            if (role?.ToLower() != "customer") return;
+
+            await Clients.Group("Staffs").SendAsync("ReceiveNotificationWithData", title, message, senderId, senderName, orderId, tableId);
+        }
     }
 }

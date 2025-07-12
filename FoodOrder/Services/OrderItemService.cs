@@ -37,7 +37,7 @@ namespace FoodOrder.Services
             {
                 throw new Exception("Order đã bị hủy!");
             }
-            if(order.Status == OrderStatus.Paid)
+            if (order.Status == OrderStatus.Paid)
             {
                 throw new Exception("Đơn hàng đã thanh toán rồi!");
             }
@@ -56,7 +56,7 @@ namespace FoodOrder.Services
             await _orderItemRepo.AddAsync(orderItem);
 
             order.TotalAmount += price * dto.Quantity;
-            if(order.Status == OrderStatus.Preparing)
+            if (order.Status == OrderStatus.Preparing)
             {
                 order.Status = OrderStatus.Update;
             }
@@ -80,7 +80,7 @@ namespace FoodOrder.Services
                 Note = i.Note,
                 Price = i.Price,
                 Image = i.MenuItem?.ImageUrl,
-                Status = i.Status == 0 ? "Pending" : "Serving"
+                Status = OrderItemStatus.getStatusItemOrder(i.Status)
             });
         }
 
@@ -93,16 +93,17 @@ namespace FoodOrder.Services
             if (item == null) return false;
 
             var order = await _orderRepo.GetByIdAsync(item.OrderId ?? 0);
-            if (order == null) 
+            if (order == null)
                 return false;
 
-            if(order.Status == OrderStatus.Preparing || order.Status == OrderStatus.Cancelled || order.Status == OrderStatus.Paid) return false;
+            if (order.Status == OrderStatus.Preparing || order.Status == OrderStatus.Cancelled || order.Status == OrderStatus.Paid) return false;
 
-            if(item.Status == OrderItemStatus.Serving) return false;
+            if (item.Status == OrderItemStatus.Serving) return false;
             decimal delta = (quantity - item.Quantity) * item.Price;
             order.TotalAmount += delta;
 
             item.Quantity = quantity;
+            item.Status = OrderItemStatus.Update;
 
             await _orderItemRepo.UpdateAsync(item);
             await _orderRepo.UpdateAsync(order);
@@ -121,7 +122,7 @@ namespace FoodOrder.Services
 
             order.TotalAmount -= item.Price * item.Quantity;
 
-            await _orderItemRepo.DeleteAsync(item.Id);     
+            await _orderItemRepo.DeleteAsync(item.Id);
             await _orderRepo.UpdateAsync(order);
             return true;
         }
@@ -130,6 +131,22 @@ namespace FoodOrder.Services
         {
             public const int Pending = 0;
             public const int Serving = 1;
+            public const int Canncel = 2;
+            public const int Paid = 3;
+            public const int Update = 4;
+
+            public static string getStatusItemOrder(int stt)
+            {
+                switch (stt)
+                {
+                    case 0: return "Pending";
+                    case 1: return "Serving";
+                    case 2: return "Canncel";
+                    case 3: return "Paid";
+                    case 4: return "Update";
+                    default: return "Default";
+                }
+            }
         }
     }
 }
