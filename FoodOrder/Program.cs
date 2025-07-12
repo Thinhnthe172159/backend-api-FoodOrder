@@ -121,6 +121,8 @@ builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 builder.Services.AddSingleton<CloudinaryService>();
 builder.Services.AddTransient<QrCodeCloudService>();
 builder.Services.AddSignalR();
+builder.Services.Configure<PayOSOptions>(builder.Configuration.GetSection("PayOS"));
+builder.Services.AddHttpClient();
 
 
 var app = builder.Build();
@@ -131,7 +133,7 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 //}
-
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
