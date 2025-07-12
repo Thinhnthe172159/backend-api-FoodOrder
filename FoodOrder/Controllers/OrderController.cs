@@ -71,6 +71,20 @@ namespace FoodOrder.Controllers
 
         }
 
+        [HttpPost("MarkAsPaid/{id:int}")]
+        public async Task<IActionResult> Paid(int id)
+        {
+            try
+            {
+                var ok = await _orderService.MarkAsPaidAsync(id);
+                return ok ? Ok($"Đã xacs nhận thanh toán order {id} ") : NotFound($"Không tìm thấy order {id}");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         // DELETE api/Cancel/orders/5
         [HttpPost("Cancel/{id:int}")]
         public async Task<IActionResult> Cancel(int id)
@@ -78,7 +92,7 @@ namespace FoodOrder.Controllers
             try
             {
                 var ok = await _orderService.CancelOrderAsync(id);
-                return ok ? Ok($"Đã hủy order {id} ") : NotFound($"Khongo tìm thấy order {id}");
+                return ok ? Ok($"Đã hủy order {id} ") : NotFound($"Không tìm thấy order {id}");
             }
             catch (Exception ex)
             {

@@ -1,0 +1,124 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Trạng thái thanh toán</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-image: url('https://cdnb.artstation.com/p/assets/images/images/030/252/755/large/wl-op-19se.jpg?1600068074');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 480px;
+            width: 90%;
+            text-align: center;
+            color: #fff;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeInUp 0.8s ease forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+        }
+
+        h1 {
+            font-weight: 600;
+        }
+
+        .btn {
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div id="icon" class="icon mb-3"></div>
+        <h1 class="mb-3">Trạng thái thanh toán</h1>
+        <div id="message" class="fs-5 fw-semibold">Đang tải...</div>
+        <button id="btnHome" class="btn btn-light mt-4">Quay về trang chủ</button>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const status = params.get('status');
+
+        const messageDiv = document.getElementById('message');
+        const iconDiv = document.getElementById('icon');
+        const btnHome = document.getElementById('btnHome');
+
+        function setSuccess() {
+            iconDiv.innerHTML = <svg xmlns="http://www.w3.org/2000/svg" fill="#28a745" viewBox="0 0 16 16" width="64" height="64">
+                <path d="M16 2L6 14l-4-4" />
+            </svg>;
+            messageDiv.textContent = "Thanh toán thành công. Cảm ơn bạn!";
+            messageDiv.classList.add('text-light');
+        }
+
+        function setCancelled() {
+            iconDiv.innerHTML = <svg xmlns="http://www.w3.org/2000/svg" fill="#dc3545" viewBox="0 0 16 16" width="64" height="64">
+                <path d="M4.646 4.646a.5.5 0 011 0l3 3 3-3a.5.5 0 11.708.708l-3 3 3 3a.5.5 0 11-.708.708l-3-3-3 3a.5.5 0 11-.708-.708l3-3-3-3a.5.5 0 010-.708z" />
+            </svg>;
+            messageDiv.textContent = "Bạn đã hủy thanh toán.";
+            messageDiv.classList.add('text-light');
+        }
+
+        function setUnknown() {
+            iconDiv.innerHTML = <svg xmlns="http://www.w3.org/2000/svg" fill="#ffc107" viewBox="0 0 16 16" width="64" height="64">
+                <path d="M8 1a7 7 0 107 7A7 7 0 008 1zm.93 10.412c-.042.198-.236.588-.93.588s-.888-.39-.93-.588a.44.44 0 01.414-.548c.3 0 .513.184.6.36a.44.44 0 00.552.012.44.44 0 00.025-.084c.042-.196.236-.586.93-.586s.888.39.93.588a.44.44 0 01-.414.548c-.3 0-.512-.184-.6-.36a.44.44 0 00-.552-.012.44.44 0 00-.025.084zM8 5a.5.5 0 01.5.5v3a.5.5 0 01-1 0v-3A.5.5 0 018 5z" />
+            </svg>;
+            messageDiv.textContent = "Trạng thái thanh toán không xác định.";
+            messageDiv.classList.add('text-light');
+        }
+
+        if (status === 'PAID') {
+            setSuccess();
+        } else if (status === 'CANCELLED') {
+            setCancelled();
+        } else {
+            setUnknown();
+        }
+
+        btnHome.addEventListener('click', () => {
+            window.location.href = '/';
+        });
+    </script>
+</body>
+</html> 
