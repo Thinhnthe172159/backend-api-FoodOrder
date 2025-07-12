@@ -55,6 +55,19 @@ namespace FoodOrder.Controllers
 
             return Ok($"Đã gửi thông báo đến khách hàng {dto.TargetCustomerId}.");
         }
+
+        [HttpPost("customer/send-with-data")]
+        [Authorize(Roles = "customer")]
+        public async Task<IActionResult> CustomerSendToStaffWithData([FromBody] NotificationWithDataDto dto)
+        {
+            var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var customerName = User.FindFirstValue(ClaimTypes.Name);
+
+            await _hubContext.Clients.Group("Staffs")
+                .SendAsync("ReceiveNotificationWithData", dto.Title, dto.Message, customerId, customerName, dto.OrderId, dto.TableId);
+
+            return Ok("Thông báo với dữ liệu đã gửi đến nhân viên.");
+        }
     }
 
 
