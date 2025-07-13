@@ -1,4 +1,5 @@
 ﻿using FoodOrder.IServices;
+using FoodOrder.Services;
 using FoodOrderApp.Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -167,6 +168,24 @@ namespace FoodOrder.Controllers
                 return Ok(list);
             }
             return BadRequest("Chưa đăng nhập");
+        }
+
+        [HttpGet("CheckPaid/{id:int}")]
+        public async Task<IActionResult> CheckPaid(int id)
+        {
+            var order = await _orderService.GetOrderByIdAsync(id);
+            if (order == null)
+            {
+                return NotFound("Order not found");
+            }
+            if (order.Status == OrderStatus.Paid)
+            {
+                return Ok("Order has been paid");
+            }
+            else
+            {
+                return BadRequest("Order has not been paid yet");
+            }
         }
     }
 }

@@ -244,16 +244,6 @@ namespace FoodOrder.Services
                 }
             }
 
-            var orderMenuItemList = await _context.OrderItems.Where(o => o.OrderId == order.Id).ToListAsync();
-            foreach (var item in orderMenuItemList)
-            {
-                if (item.Status == OrderItemStatus.Paid)
-                {
-                    item.Status = OrderItemStatus.Paid;
-                    _context.OrderItems.Update(item);
-                }
-            }
-
             var table = await _context.Tables.FindAsync(order.TableId);
             if (table != null)
             {
