@@ -60,6 +60,7 @@ namespace FoodOrder.Services
             {
                 if (item.Status == OrderItemStatus.Canncel)
                 {
+
                   //  item.Status = OrderItemStatus.Canncel;
                     _context.OrderItems.Remove(item);
                 }
@@ -232,7 +233,6 @@ namespace FoodOrder.Services
 
 
             order.PaidAt = TimeZoneChange.ConvertToTimeZone(DateTime.UtcNow, "SE Asia Standard Time");
-
             await _orderRepository.UpdateAsync(order);
             var orderMenuItemList = await _context.OrderItems.Where(o => o.OrderId == order.Id).ToListAsync();
             foreach (var item in orderMenuItemList)

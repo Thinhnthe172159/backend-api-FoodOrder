@@ -47,8 +47,8 @@ namespace FoodOrder.Services
             if (!string.IsNullOrEmpty(filter.Keyword))
             {
                 filteredItems = filteredItems.Where(m =>
-     EF.Functions.Collate(m.Name, "Latin1_General_CI_AI").Contains(filter.Keyword) ||
-     EF.Functions.Collate(m.Description, "Latin1_General_CI_AI").Contains(filter.Keyword));
+                    EF.Functions.Collate(m.Name, "Latin1_General_CI_AI").Contains(filter.Keyword) ||
+                    EF.Functions.Collate(m.Description, "Latin1_General_CI_AI").Contains(filter.Keyword));
 
             }
 
